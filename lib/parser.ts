@@ -1,33 +1,38 @@
-export function parseSiNubeResponse(raw: string) {
+export function parseSiNube(raw: string) {
 
-  const rows = raw.split("¬");
+  const filas = raw.split("¬");
 
-  if (!rows.length) {
+  if (filas.length < 2) {
     return [];
   }
 
-  const header = rows[0].split("|");
+  const header = filas[0].split("|");
 
-  const columns: string[] = [];
+  const columnas: string[] = [];
+
+  // Saltar:
+  // [0] cantidad registros
+  // [1] cursor
 
   for (let i = 2; i < header.length; i += 2) {
-    columns.push(header[i]);
+    columnas.push(header[i]);
   }
 
-  const result: any[] = [];
+  const resultado = [];
 
-  for (let i = 1; i < rows.length; i++) {
+  for (let i = 1; i < filas.length; i++) {
 
-    const values = rows[i].split("|");
+    const valores = filas[i].split("|");
 
-    const item: any = {};
+    const row: any = {};
 
-    columns.forEach((col, index) => {
-      item[col] = values[index];
+    columnas.forEach((columna, index) => {
+      row[columna] = valores[index];
     });
 
-    result.push(item);
+    resultado.push(row);
   }
 
-  return result;
+  return resultado;
 }
+`
