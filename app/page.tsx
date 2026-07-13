@@ -1,1 +1,1 @@
-
+export default function Page(){return (<main style={{padding:30,fontFamily:'Arial'}}><h1>Dashboard Ejecutivo de Obra</h1><div><h2>KPIs</h2><ul><li>Presupuesto Total</li><li>Utilizado</li><li>Disponible</li></ul></div><table border={1}><thead><tr><th>Concepto</th><th>%</th><th>Estado</th></tr></thead><tbody><tr><td>Terracerias</td><td>112%</td><td>EXCEDIDO</td></tr></tbody></table></main>)}
