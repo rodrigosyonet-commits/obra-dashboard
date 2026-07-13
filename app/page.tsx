@@ -1,71 +1,102 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { calculateRow } from "@/lib/metrics";
+
 export default function Home() {
+
+  const [datos, setDatos] = useState<any[]>([]);
+
+  useEffect(() => {
+
+    // Datos de prueba
+
+    const demo = [
+      {
+        renglon: 1,
+        descripcion: "Terracerías",
+        subtotalPresupuestado: 3200000,
+        cantidad: 3600,
+        valorUnitario: 1000
+      },
+      {
+        renglon: 2,
+        descripcion: "Pisos",
+        subtotalPresupuestado: 23000,
+        cantidad: 21,
+        valorUnitario: 1000
+      }
+    ];
+
+    setDatos(
+      demo.map(calculateRow)
+    );
+
+  }, []);
+
   return (
-    <main
-      style={{
-        padding: "40px",
-        maxWidth: "1400px",
-        margin: "0 auto",
-      }}
-    >
+    <main style={{ padding: "40px" }}>
+
       <h1>Dashboard Ejecutivo de Obras</h1>
 
-      <p>
-        Conexión SiNube / FacturaNube
-      </p>
-
-      <div
+      <table
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "20px",
-          marginTop: "20px",
+          width: "100%",
+          marginTop: "30px",
+          borderCollapse: "collapse"
         }}
       >
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "10px",
-          }}
-        >
-          <h3>Presupuesto</h3>
-          <h2>$0</h2>
-        </div>
+        <thead>
+          <tr>
+            <th>Renglón</th>
+            <th>Concepto</th>
+            <th>Presupuesto</th>
+            <th>Utilizado</th>
+            <th>Disponible</th>
+            <th>%</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
 
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "10px",
-          }}
-        >
-          <h3>Utilizado</h3>
-          <h2>$0</h2>
-        </div>
+        <tbody>
+          {datos.map((row, index) => (
 
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "10px",
-          }}
-        >
-          <h3>Disponible</h3>
-          <h2>$0</h2>
-        </div>
+            <tr key={index}>
 
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "10px",
-          }}
-        >
-          <h3>Avance</h3>
-          <h2>0%</h2>
-        </div>
-      </div>
+              <td>{row.renglon}</td>
+
+              <td>{row.descripcion}</td>
+
+              <td>
+                $
+                {row.presupuesto.toLocaleString()}
+              </td>
+
+              <td>
+                $
+                {row.utilizado.toLocaleString()}
+              </td>
+
+              <td>
+                $
+                {row.disponible.toLocaleString()}
+              </td>
+
+              <td>
+                {row.porcentaje.toFixed(2)}%
+              </td>
+
+              <td>
+                {row.estado}
+              </td>
+
+            </tr>
+
+          ))}
+        </tbody>
+
+      </table>
+
     </main>
   );
 }
-`
