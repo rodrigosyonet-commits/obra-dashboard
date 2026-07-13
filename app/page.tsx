@@ -1,48 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { calculateRow } from "@/lib/metrics";
+import { useState } from "react";
 
 export default function Home() {
 
+  const [loading, setLoading] = useState(false);
   const [datos, setDatos] = useState<any[]>([]);
 
-  useEffect(() => {
+  async function consultar() {
 
-    // Datos de prueba
+    setLoading(true);
 
-    const demo = [
-      {
-        renglon: 1,
-        descripcion: "Terracerías",
-        subtotalPresupuestado: 3200000,
-        cantidad: 3600,
-        valorUnitario: 1000
-      },
-      {
-        renglon: 2,
-        descripcion: "Pisos",
-        subtotalPresupuestado: 23000,
-        cantidad: 21,
-        valorUnitario: 1000
-      }
-    ];
+    try {
 
-    setDatos(
-      demo.map(calculateRow)
-    );
+      const response = await fetch("/api/presupuesto");
 
-  }, []);
+      const result = await response.json();
+
+      console.log(result);
+
+      setDatos(result.data || []);
+
+    } catch (error) {
+
+      console.error(error);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  }
 
   return (
     <main style={{ padding: "40px" }}>
 
       <h1>Dashboard Ejecutivo de Obras</h1>
 
+      <button
+        onClick={consultar}
+        disabled={loading}
+        style={{
+          background: "#2563eb",
+          color: "white",
+          border: "none",
+          padding: "12px 24px",
+          borderRadius: "8px",
+          cursor: "pointer",
+          marginBottom: "20px"
+        }}
+      >
+        {loading ? "Consultando..." : "Consultar SiNube"}
+      </button>
+
       <table
         style={{
           width: "100%",
-          marginTop: "30px",
           borderCollapse: "collapse"
         }}
       >
@@ -59,7 +72,8 @@ export default function Home() {
         </thead>
 
         <tbody>
-          {datos.map((row, index) => (
+
+          {datos.map((row: any, index: number) => (
 
             <tr key={index}>
 
@@ -68,33 +82,28 @@ export default function Home() {
               <td>{row.descripcion}</td>
 
               <td>
-                $
-                {row.presupuesto.toLocaleString()}
+                ${row.presupuesto?.toLocaleString()}
               </td>
 
               <td>
-                $
-                {row.utilizado.toLocaleString()}
+                ${row.utilizado?.toLocaleString()}
               </td>
 
               <td>
-                $
-                {row.disponible.toLocaleString()}
+                ${row.disponible?.toLocaleString()}
               </td>
 
               <td>
-                {row.porcentaje.toFixed(2)}%
+                {row.porcentaje?.toFixed(2)}%
               </td>
 
-              <td>
-                {row.estado}
-              </td>
+              <td>{row.estado}</td>
 
             </tr>
 
           ))}
-        </tbody>
 
+        </tbody>
       </table>
 
     </main>
