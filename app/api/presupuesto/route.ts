@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
+
   const query = `
 SELECT
     C.cliente,
@@ -37,13 +38,11 @@ TAMPAG 500
     "https://getpost-dot-facturanube.appspot.com/getpost",
     {
       method: "POST",
-      body: params,
+      body: params
     }
   );
 
-  const texto = await response.text();
+  const raw = await response.text();
 
-  return NextResponse.json({
-    raw: texto,
-  });
+  return NextResponse.json({ raw });
 }
