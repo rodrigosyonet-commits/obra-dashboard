@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
 
-  const query =
+const empresa = process.env.FACTURANUBE_EMP;
+const sucursal = process.env.FACTURANUBE_SUC;
+
+const query =
   "SELECT " +
   "C.cliente," +
   "C.razonSocial," +
@@ -19,8 +22,8 @@ export async function GET() {
   "ON D.empresa=C.empresa " +
   "AND D.sucursal=C.sucursal " +
   "AND D.folioContrato=C.folioContrato " +
-  "WHERE C.empresa=@empresa " +
-  "AND C.sucursal=@sucursal " +
+  `WHERE C.empresa='${empresa}' ` +
+  `AND C.sucursal='${sucursal}' ` +
   "TAMPAG 500";
 
   const params = new URLSearchParams({
