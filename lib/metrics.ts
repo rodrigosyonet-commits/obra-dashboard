@@ -1,5 +1,4 @@
-export function calculateRow(row: any) {
-
+export function calcularIndicadores(row: any) {
   const presupuesto =
     Number(row.subtotalPresupuestado || 0);
 
@@ -15,16 +14,14 @@ export function calculateRow(row: any) {
       ? (utilizado / presupuesto) * 100
       : 0;
 
-  let semaforo = "VERDE";
+  let estado = "VERDE";
 
   if (porcentaje >= 100) {
-    semaforo = "EXCEDIDO";
-  }
-  else if (porcentaje >= 90) {
-    semaforo = "ROJO";
-  }
-  else if (porcentaje >= 60) {
-    semaforo = "NARANJA";
+    estado = "EXCEDIDO";
+  } else if (porcentaje >= 90) {
+    estado = "ROJO";
+  } else if (porcentaje >= 60) {
+    estado = "NARANJA";
   }
 
   return {
@@ -33,6 +30,6 @@ export function calculateRow(row: any) {
     utilizado,
     disponible,
     porcentaje,
-    semaforo
+    estado,
   };
 }
