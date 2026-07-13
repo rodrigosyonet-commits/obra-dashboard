@@ -1,4 +1,5 @@
-export function calcularIndicadores(row: any) {
+export function calculateRow(row: any) {
+
   const presupuesto =
     Number(row.subtotalPresupuestado || 0);
 
@@ -30,6 +31,6 @@ export function calcularIndicadores(row: any) {
     utilizado,
     disponible,
     porcentaje,
-    estado,
+    estado
   };
 }
