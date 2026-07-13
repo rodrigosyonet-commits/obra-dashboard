@@ -12,15 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body
-        style={{
-          margin: 0,
-          padding: 0,
-          fontFamily:
-            "Inter, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif",
-          backgroundColor: "#f5f7fa",
-        }}
-      >
+      <body>
         {children}
       </body>
     </html>
