@@ -27,22 +27,46 @@ TAMPAG 500
 
   const params = new URLSearchParams({
     tipo: "3",
-    emp: process.env.FACTURANUBE_EMP!,
-    suc: process.env.FACTURANUBE_SUC!,
-    usu: process.env.FACTURANUBE_USU!,
-    pas: process.env.FACTURANUBE_PASSWORD!,
+    emp: process.env.FACTURANUBE_EMP || "",
+    suc: process.env.FACTURANUBE_SUC || "",
+    usu: process.env.FACTURANUBE_USU || "",
+    pas: process.env.FACTURANUBE_PASSWORD || "",
     cns: query,
   });
 
-  const response = await fetch(
-    "https://getpost-dot-facturanube.appspot.com/getpost",
-    {
-      method: "POST",
-      body: params
-    }
-  );
+  try {
 
-  const raw = await response.text();
+    const response = await fetch(
+      "https://getpost-dot-facturanube.appspot.com/getpost",
+      {
+        method: "POST",
+        body: params,
+      }
+    );
 
-  return NextResponse.json({ raw });
+    const raw = await response.text();
+
+    console.log("STATUS:", response.status);
+    console.log("RAW:", raw);
+
+    return NextResponse.json({
+      success: true,
+      status: response.status,
+      raw,
+      env: {
+        emp: process.env.FACTURANUBE_EMP,
+        suc: process.env.FACTURANUBE_SUC,
+        usu: process.env.FACTURANUBE_USU,
+        passwordExiste: !!process.env.FACTURANUBE_PASSWORD
+      }
+    });
+
+  } catch (error) {
+
+    return NextResponse.json({
+      success: false,
+      error: String(error)
+    });
+
+  }
 }
