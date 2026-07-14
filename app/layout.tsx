@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Dashboard Ejecutivo de Obras",
-  description: "Control Presupuestal de Obras",
+  description:
+    "Control Presupuestal de Obras",
 };
 
 export default function RootLayout({
@@ -15,7 +16,8 @@ export default function RootLayout({
       <body
         style={{
           margin: 0,
-          background: "#f4f6f8",
+          background:
+            "#f4f6f8",
           fontFamily:
             "Segoe UI, Inter, Arial, sans-serif",
         }}
