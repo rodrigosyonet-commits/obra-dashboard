@@ -1,6 +1,9 @@
 export function calculateRow(row: any) {
+
   const presupuesto =
-    Number(row.subtotalPresupuestado || 0);
+    Number(
+      row.subtotalPresupuestado || 0
+    );
 
   const utilizado =
     Number(row.valorUnitario || 0) *
@@ -11,7 +14,10 @@ export function calculateRow(row: any) {
 
   const porcentaje =
     presupuesto > 0
-      ? (utilizado / presupuesto) * 100
+      ? (
+          utilizado /
+          presupuesto
+        ) * 100
       : 0;
 
   let estado = "🟢";
