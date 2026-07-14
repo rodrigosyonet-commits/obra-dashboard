@@ -2,17 +2,36 @@
 
 import { useEffect, useState } from "react";
 
+type KPIState = {
+  presupuesto: number;
+  utilizado: number;
+  disponible: number;
+  avance: number;
+};
+
+type KPIProps = {
+  titulo: string;
+  valor: number | string;
+  color: string;
+};
+
 export default function Home() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState<boolean>(false);
+
+  const [error, setError] =
+    useState<string>("");
 
   const [modoFecha, setModoFecha] =
-    useState("mes");
+    useState<"mes" | "semana" | "dia">(
+      "mes"
+    );
 
   const [fecha, setFecha] =
-    useState("2026-07-13");
+    useState<string>("2026-07-13");
 
   const [obra, setObra] =
-    useState("");
+    useState<string>("");
 
   const [obras, setObras] =
     useState<any[]>([]);
@@ -20,15 +39,18 @@ export default function Home() {
   const [datos, setDatos] =
     useState<any[]>([]);
 
-  const [kpis, setKpis] = useState({
-    presupuesto: 0,
-    utilizado: 0,
-    disponible: 0,
-    avance: 0,
-  });
+  const [kpis, setKpis] =
+    useState<KPIState>({
+      presupuesto: 0,
+      utilizado: 0,
+      disponible: 0,
+      avance: 0,
+    });
 
-  function obtenerMes(fecha: string) {
-    const d = new Date(fecha);
+  function obtenerMes(
+    fechaTexto: string
+  ) {
+    const d = new Date(fechaTexto);
 
     const anio = d.getFullYear();
 
@@ -39,29 +61,51 @@ export default function Home() {
     return `${anio}${mes}`;
   }
 
-  function obtenerDia(fecha: string) {
-    return fecha.replaceAll("-", "");
+  function obtenerDia(
+    fechaTexto: string
+  ) {
+    return fechaTexto.replaceAll(
+      "-",
+      ""
+    );
   }
 
   async function cargarObras() {
     try {
-      const mes = obtenerMes(fecha);
+      setError("");
 
-      const response = await fetch(
-        `/api/obras?mes=${mes}`
-      );
+      const mes =
+        obtenerMes(fecha);
+
+      const response =
+        await fetch(
+          `/api/obras?mes=${mes}`
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "Error cargando obras"
+        );
+      }
 
       const result =
         await response.json();
 
-      setObras(result.obras || []);
-    } catch (error) {
-      console.error(error);
+      setObras(
+        result.obras || []
+      );
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        "No fue posible cargar las obras."
+      );
     }
   }
 
   async function consultar() {
     setLoading(true);
+    setError("");
 
     try {
       let url =
@@ -69,12 +113,16 @@ export default function Home() {
 
       if (modoFecha === "mes") {
         url +=
-          `&mes=${obtenerMes(fecha)}`;
+          `&mes=${obtenerMes(
+            fecha
+          )}`;
       }
 
       if (modoFecha === "dia") {
         url +=
-          `&dia=${obtenerDia(fecha)}`;
+          `&dia=${obtenerDia(
+            fecha
+          )}`;
       }
 
       if (obra) {
@@ -86,6 +134,12 @@ export default function Home() {
 
       const response =
         await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(
+          "Error consultando presupuesto"
+        );
+      }
 
       const result =
         await response.json();
@@ -103,7 +157,8 @@ export default function Home() {
           ) =>
             sum +
             Number(
-              row.presupuesto || 0
+              row.presupuesto ||
+                0
             ),
           0
         );
@@ -116,7 +171,8 @@ export default function Home() {
           ) =>
             sum +
             Number(
-              row.utilizado || 0
+              row.utilizado ||
+                0
             ),
           0
         );
@@ -137,8 +193,14 @@ export default function Home() {
         disponible,
         avance,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        "Ocurrió un error al consultar SiNube."
+      );
+
+      setDatos([]);
     } finally {
       setLoading(false);
     }
@@ -151,29 +213,25 @@ export default function Home() {
   return (
     <main
       style={{
-        padding: 30,
-        maxWidth: 1600,
+        maxWidth: "1600px",
         margin: "0 auto",
+        padding: "30px",
       }}
     >
-      <h1
-        style={{
-          marginBottom: 30,
-        }}
-      >
+      <h1>
         Dashboard Ejecutivo de Obras
       </h1>
 
       <div
         style={{
-          background: "#fff",
+          background: "white",
           padding: 20,
           borderRadius: 12,
           display: "flex",
           gap: 20,
-          alignItems: "center",
           flexWrap: "wrap",
-          marginBottom: 25,
+          alignItems: "center",
+          marginBottom: 20,
         }}
       >
         <input
@@ -193,7 +251,9 @@ export default function Home() {
               modoFecha === "mes"
             }
             onChange={() =>
-              setModoFecha("mes")
+              setModoFecha(
+                "mes"
+              )
             }
           />
           Mes
@@ -222,7 +282,9 @@ export default function Home() {
               modoFecha === "dia"
             }
             onChange={() =>
-              setModoFecha("dia")
+              setModoFecha(
+                "dia"
+              )
             }
           />
           Día
@@ -251,7 +313,9 @@ export default function Home() {
                   item.razonSocial
                 }
               >
-                {item.razonSocial}
+                {
+                  item.razonSocial
+                }
               </option>
             )
           )}
@@ -261,11 +325,13 @@ export default function Home() {
           onClick={consultar}
           disabled={loading}
           style={{
-            background: "#2563eb",
+            background:
+              "#2563eb",
             color: "white",
             border: 0,
-            padding: "10px 25px",
             borderRadius: 8,
+            padding:
+              "10px 25px",
             cursor: "pointer",
           }}
         >
@@ -275,30 +341,51 @@ export default function Home() {
         </button>
       </div>
 
+      {error && (
+        <div
+          style={{
+            background:
+              "#fee2e2",
+            color: "#991b1b",
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 20,
+          }}
+        >
+          {error}
+        </div>
+      )}
+
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
             "repeat(4,1fr)",
           gap: 20,
-          marginBottom: 25,
+          marginBottom: 20,
         }}
       >
         <KPI
           titulo="Presupuesto"
-          valor={kpis.presupuesto}
+          valor={
+            kpis.presupuesto
+          }
           color="#2563eb"
         />
 
         <KPI
           titulo="Utilizado"
-          valor={kpis.utilizado}
+          valor={
+            kpis.utilizado
+          }
           color="#dc2626"
         />
 
         <KPI
           titulo="Disponible"
-          valor={kpis.disponible}
+          valor={
+            kpis.disponible
+          }
           color="#16a34a"
         />
 
@@ -314,15 +401,16 @@ export default function Home() {
       <div
         style={{
           background: "white",
-          borderRadius: 12,
           padding: 20,
+          borderRadius: 12,
           overflowX: "auto",
         }}
       >
         <table
           style={{
             width: "100%",
-            borderCollapse: "collapse",
+            borderCollapse:
+              "collapse",
           }}
         >
           <thead>
@@ -344,10 +432,14 @@ export default function Home() {
                 index: number
               ) => (
                 <tr key={index}>
-                  <td>{row.renglon}</td>
+                  <td>
+                    {row.renglon}
+                  </td>
 
                   <td>
-                    {row.descripcion}
+                    {
+                      row.descripcion
+                    }
                   </td>
 
                   <td>
@@ -395,7 +487,7 @@ function KPI({
   titulo,
   valor,
   color,
-}: any) {
+}: KPIProps) {
   return (
     <div
       style={{
@@ -420,7 +512,8 @@ function KPI({
           fontWeight: 700,
         }}
       >
-        {typeof valor === "number"
+        {typeof valor ===
+        "number"
           ? `$${valor.toLocaleString()}`
           : valor}
       </div>
