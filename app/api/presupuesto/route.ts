@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-
+import { parseSiNube } from "@/lib/parser";
 export async function GET() {
 
 const empresa = process.env.FACTURANUBE_EMP;
@@ -71,3 +71,11 @@ const query =
 
   }
 }
+const raw = await response.text();
+
+const data = parseSiNube(raw);
+
+return NextResponse.json({
+  total: data.length,
+  data,
+});
