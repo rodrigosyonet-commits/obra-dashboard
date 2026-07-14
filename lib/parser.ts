@@ -10,15 +10,11 @@ export function parseSiNube(raw: string) {
 
   const columnas: string[] = [];
 
-  // Saltar:
-  // [0] cantidad registros
-  // [1] cursor
-
   for (let i = 2; i < header.length; i += 2) {
     columnas.push(header[i]);
   }
 
-  const resultado = [];
+  const resultado: any[] = [];
 
   for (let i = 1; i < filas.length; i++) {
 
@@ -35,4 +31,3 @@ export function parseSiNube(raw: string) {
 
   return resultado;
 }
-`
