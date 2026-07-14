@@ -2,9 +2,42 @@ import { NextResponse } from "next/server";
 import { parseSiNube } from "../../../lib/parser";
 import { calculateRow } from "../../../lib/metrics";
 
-export async function GET() {
+export async function GET(request: Request) {
+
   const empresa = process.env.FACTURANUBE_EMP || "";
   const sucursal = process.env.FACTURANUBE_SUC || "";
+
+  const { searchParams } =
+    new URL(request.url);
+
+  const tipoFiltro =
+    searchParams.get("tipoFiltro") || "mes";
+
+  const mes =
+    searchParams.get("mes") || "202607";
+
+  const dia =
+    searchParams.get("dia") || "";
+
+  const obra =
+    searchParams.get("obra") || "";
+
+  let where =
+    `WHERE C.empresa='${empresa}' ` +
+    `AND C.sucursal='${sucursal}' `;
+
+  if (tipoFiltro === "mes") {
+    where += `AND C.mes=${mes} `;
+  }
+
+  if (tipoFiltro === "dia") {
+    where += `AND C.dia=${dia} `;
+  }
+
+  if (obra) {
+    where +=
+      `AND $razonSocial='${obra}' `;
+  }
 
   const query =
     "SELECT " +
@@ -23,8 +56,7 @@ export async function GET() {
     "ON D.empresa=C.empresa " +
     "AND D.sucursal=C.sucursal " +
     "AND D.folioContrato=C.folioContrato " +
-    `WHERE C.empresa='${empresa}' ` +
-    `AND C.sucursal='${sucursal}' ` +
+    where +
     "TAMPAG 500";
 
   const params = new URLSearchParams({
@@ -37,8 +69,6 @@ export async function GET() {
   });
 
   try {
-    console.log("QUERY:");
-    console.log(query);
 
     const response = await fetch(
       "https://getpost-dot-facturanube.appspot.com/getpost",
@@ -51,27 +81,19 @@ export async function GET() {
 
     const raw = await response.text();
 
-    console.log("RAW:");
-    console.log(raw);
-
     const data = parseSiNube(raw);
 
-    const dataProcesada = data.map((row) =>
-      calculateRow(row)
-    );
+    const resultado =
+      data.map(calculateRow);
 
     return NextResponse.json({
       success: true,
-      total: dataProcesada.length,
-      data: dataProcesada,
-      raw,
-      debug: {
-        empresa,
-        sucursal,
-      },
+      total: resultado.length,
+      data: resultado,
+      query,
     });
+
   } catch (error) {
-    console.error("ERROR API:", error);
 
     return NextResponse.json(
       {
