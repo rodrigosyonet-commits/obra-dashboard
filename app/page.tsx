@@ -20,13 +20,12 @@ export default function Home() {
   const [datos, setDatos] =
     useState<any[]>([]);
 
-  const [kpis, setKpis] =
-    useState({
-      presupuesto: 0,
-      utilizado: 0,
-      disponible: 0,
-      avance: 0,
-    });
+  const [kpis, setKpis] = useState({
+    presupuesto: 0,
+    utilizado: 0,
+    disponible: 0,
+    avance: 0,
+  });
 
   function obtenerMes(fecha: string) {
     const d = new Date(fecha);
@@ -45,15 +44,20 @@ export default function Home() {
   }
 
   async function cargarObras() {
-    const mes = obtenerMes(fecha);
+    try {
+      const mes = obtenerMes(fecha);
 
-    const response = await fetch(
-      `/api/obras?mes=${mes}`
-    );
+      const response = await fetch(
+        `/api/obras?mes=${mes}`
+      );
 
-    const result = await response.json();
+      const result =
+        await response.json();
 
-    setObras(result.obras || []);
+      setObras(result.obras || []);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async function consultar() {
@@ -133,6 +137,8 @@ export default function Home() {
         disponible,
         avance,
       });
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -152,27 +158,22 @@ export default function Home() {
     >
       <h1
         style={{
-          color: "#1f2937",
           marginBottom: 30,
         }}
       >
-        Dashboard Ejecutivo
-        de Obras
+        Dashboard Ejecutivo de Obras
       </h1>
-
-      {/* FILTROS */}
 
       <div
         style={{
-          background: "white",
+          background: "#fff",
           padding: 20,
           borderRadius: 12,
           display: "flex",
           gap: 20,
           alignItems: "center",
           flexWrap: "wrap",
-          boxShadow:
-            "0 2px 10px rgba(0,0,0,.08)",
+          marginBottom: 25,
         }}
       >
         <input
@@ -188,14 +189,11 @@ export default function Home() {
         <label>
           <input
             type="radio"
-            name="modo"
             checked={
               modoFecha === "mes"
             }
             onChange={() =>
-              setModoFecha(
-                "mes"
-              )
+              setModoFecha("mes")
             }
           />
           Mes
@@ -204,7 +202,6 @@ export default function Home() {
         <label>
           <input
             type="radio"
-            name="modo"
             checked={
               modoFecha ===
               "semana"
@@ -221,15 +218,11 @@ export default function Home() {
         <label>
           <input
             type="radio"
-            name="modo"
             checked={
-              modoFecha ===
-              "dia"
+              modoFecha === "dia"
             }
             onChange={() =>
-              setModoFecha(
-                "dia"
-              )
+              setModoFecha("dia")
             }
           />
           Día
@@ -249,18 +242,16 @@ export default function Home() {
 
           {obras.map(
             (
-              obra,
-              index
+              item: any,
+              index: number
             ) => (
               <option
                 key={index}
                 value={
-                  obra.razonSocial
+                  item.razonSocial
                 }
               >
-                {
-                  obra.razonSocial
-                }
+                {item.razonSocial}
               </option>
             )
           )}
@@ -270,12 +261,10 @@ export default function Home() {
           onClick={consultar}
           disabled={loading}
           style={{
-            background:
-              "#2563eb",
+            background: "#2563eb",
             color: "white",
             border: 0,
-            padding:
-              "10px 25px",
+            padding: "10px 25px",
             borderRadius: 8,
             cursor: "pointer",
           }}
@@ -286,15 +275,13 @@ export default function Home() {
         </button>
       </div>
 
-      {/* KPIS */}
-
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
             "repeat(4,1fr)",
           gap: 20,
-          marginTop: 25,
+          marginBottom: 25,
         }}
       >
         <KPI
@@ -324,24 +311,18 @@ export default function Home() {
         />
       </div>
 
-      {/* TABLA */}
-
       <div
         style={{
-          marginTop: 25,
           background: "white",
           borderRadius: 12,
           padding: 20,
           overflowX: "auto",
-          boxShadow:
-            "0 2px 10px rgba(0,0,0,.08)",
         }}
       >
         <table
           style={{
             width: "100%",
-            borderCollapse:
-              "collapse",
+            borderCollapse: "collapse",
           }}
         >
           <thead>
@@ -363,16 +344,10 @@ export default function Home() {
                 index: number
               ) => (
                 <tr key={index}>
-                  <td>
-                    {
-                      row.renglon
-                    }
-                  </td>
+                  <td>{row.renglon}</td>
 
                   <td>
-                    {
-                      row.descripcion
-                    }
+                    {row.descripcion}
                   </td>
 
                   <td>
@@ -399,32 +374,12 @@ export default function Home() {
                   <td>
                     {Number(
                       row.porcentaje
-                    ).toFixed(
-                      2
-                    )}
+                    ).toFixed(2)}
                     %
                   </td>
 
                   <td>
-                    <div
-                      style={{
-                        width: 18,
-                        height: 18,
-                        borderRadius:
-                          "50%",
-                        background:
-                          row.estado ===
-                          "⚫"
-                            ? "#111827"
-                            : row.estado ===
-                              "🔴"
-                            ? "#ef4444"
-                            : row.estado ===
-                              "🟠"
-                            ? "#f59e0b"
-                            : "#22c55e",
-                      }}
-                    />
+                    {row.estado}
                   </td>
                 </tr>
               )
@@ -447,8 +402,7 @@ function KPI({
         background: "white",
         padding: 20,
         borderRadius: 12,
-        borderLeft:
-          `6px solid ${color}`,
+        borderLeft: `6px solid ${color}`,
       }}
     >
       <div
@@ -466,8 +420,7 @@ function KPI({
           fontWeight: 700,
         }}
       >
-        {typeof valor ===
-        "number"
+        {typeof valor === "number"
           ? `$${valor.toLocaleString()}`
           : valor}
       </div>
