@@ -31,9 +31,6 @@ export async function GET(request: Request) {
   });
 
   try {
-    console.log("QUERY OBRAS:");
-    console.log(query);
-
     const response = await fetch(
       "https://getpost-dot-facturanube.appspot.com/getpost",
       {
@@ -45,26 +42,21 @@ export async function GET(request: Request) {
 
     const raw = await response.text();
 
-    console.log("RAW OBRAS:");
-    console.log(raw);
-
     const data = parseSiNube(raw);
 
     const obras = data
-      // Excluir cancelados
-      .filter((obra) => obra.estatus !== "4")
-
-      // Evitar duplicados
+      .filter(
+        (obra) => obra.estatus !== "4"
+      )
       .filter(
         (obra, index, self) =>
           index ===
           self.findIndex(
             (o) =>
-              o.razonSocial === obra.razonSocial
+              o.razonSocial ===
+              obra.razonSocial
           )
       )
-
-      // Traducir estatus
       .map((obra) => ({
         razonSocial: obra.razonSocial,
         estatus: obra.estatus,
@@ -83,12 +75,8 @@ export async function GET(request: Request) {
       success: true,
       total: obras.length,
       obras,
-      raw,
     });
-
   } catch (error) {
-    console.error("ERROR OBRAS:", error);
-
     return NextResponse.json(
       {
         success: false,
@@ -100,4 +88,3 @@ export async function GET(request: Request) {
     );
   }
 }
-`
