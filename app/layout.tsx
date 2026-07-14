@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Dashboard Ejecutivo de Obras",
-  description: "Control presupuestal de obra con SiNube",
+  description: "Control Presupuestal de Obras",
 };
 
 export default function RootLayout({
@@ -12,7 +12,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>
+      <body
+        style={{
+          margin: 0,
+          background: "#f4f6f8",
+          fontFamily:
+            "Segoe UI, Inter, Arial, sans-serif",
+        }}
+      >
         {children}
       </body>
     </html>
