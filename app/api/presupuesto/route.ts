@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseSiNube } from "@/lib/parser";
-
+import { parseSiNube } from "../../../lib/parser";
 export async function GET() {
 
   const empresa = process.env.FACTURANUBE_EMP;
