@@ -1,5 +1,4 @@
 export function calculateRow(row: any) {
-
   const presupuesto =
     Number(row.subtotalPresupuestado || 0);
 
@@ -15,14 +14,14 @@ export function calculateRow(row: any) {
       ? (utilizado / presupuesto) * 100
       : 0;
 
-  let estado = "VERDE";
+  let estado = "🟢";
 
   if (porcentaje >= 100) {
-    estado = "EXCEDIDO";
+    estado = "⚫";
   } else if (porcentaje >= 90) {
-    estado = "ROJO";
+    estado = "🔴";
   } else if (porcentaje >= 60) {
-    estado = "NARANJA";
+    estado = "🟠";
   }
 
   return {
@@ -31,6 +30,6 @@ export function calculateRow(row: any) {
     utilizado,
     disponible,
     porcentaje,
-    estado
+    estado,
   };
 }
