@@ -119,15 +119,14 @@ export async function GET(request: Request) {
             item.subtotalPresupuestado || 0
           );
 
-        const comprasRelacionadas =
-          compras.filter(
-            (c: any) =>
-              String(
-                c.renglonOrigen
-              ) ===
-              String(item.renglon)
-          );
-
+     const comprasRelacionadas =
+  compras.filter(
+    (c: any) =>
+      String(c.folioContrato) ===
+        String(item.folioContrato) &&
+      String(c.producto) ===
+        String(item.producto)
+  );
         const pagado =
           comprasRelacionadas
             .filter(
