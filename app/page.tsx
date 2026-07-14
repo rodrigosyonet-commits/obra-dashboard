@@ -2,49 +2,38 @@
 
 import { useEffect, useState } from "react";
 
-type KPIState = {
+type DashboardRow = {
+  obra: string;
+  concepto: string;
   presupuesto: number;
-  utilizado: number;
+  pagado: number;
+  comprometido: number;
   disponible: number;
   avance: number;
-};
-
-type KPIProps = {
-  titulo: string;
-  valor: number | string;
-  color: string;
+  estado: string;
 };
 
 export default function Home() {
-  const [loading, setLoading] =
-    useState<boolean>(false);
-
-  const [error, setError] =
-    useState<string>("");
-
-  const [modoFecha, setModoFecha] =
-    useState<"mes" | "semana" | "dia">(
-      "mes"
-    );
+  const [loading, setLoading] = useState(false);
 
   const [fecha, setFecha] =
-    useState<string>("2026-07-13");
+    useState("2026-07-13");
 
   const [obra, setObra] =
-    useState<string>("");
+    useState("");
 
   const [obras, setObras] =
     useState<any[]>([]);
 
   const [datos, setDatos] =
-    useState<any[]>([]);
+    useState<DashboardRow[]>([]);
 
   const [kpis, setKpis] =
-    useState<KPIState>({
+    useState({
       presupuesto: 0,
-      utilizado: 0,
+      pagado: 0,
+      comprometido: 0,
       disponible: 0,
-      avance: 0,
     });
 
   function obtenerMes(
@@ -61,19 +50,8 @@ export default function Home() {
     return `${anio}${mes}`;
   }
 
-  function obtenerDia(
-    fechaTexto: string
-  ) {
-    return fechaTexto.replaceAll(
-      "-",
-      ""
-    );
-  }
-
   async function cargarObras() {
     try {
-      setError("");
-
       const mes =
         obtenerMes(fecha);
 
@@ -82,48 +60,24 @@ export default function Home() {
           `/api/obras?mes=${mes}`
         );
 
-      if (!response.ok) {
-        throw new Error(
-          "Error cargando obras"
-        );
-      }
-
       const result =
         await response.json();
 
-      setObras(
-        result.obras || []
-      );
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        "No fue posible cargar las obras."
-      );
+      setObras(result.obras || []);
+    } catch (error) {
+      console.error(error);
     }
   }
 
   async function consultar() {
     setLoading(true);
-    setError("");
 
     try {
+      const mes =
+        obtenerMes(fecha);
+
       let url =
-        `/api/presupuesto?tipoFiltro=${modoFecha}`;
-
-      if (modoFecha === "mes") {
-        url +=
-          `&mes=${obtenerMes(
-            fecha
-          )}`;
-      }
-
-      if (modoFecha === "dia") {
-        url +=
-          `&dia=${obtenerDia(
-            fecha
-          )}`;
-      }
+        `/api/dashboard?mes=${mes}`;
 
       if (obra) {
         url +=
@@ -135,12 +89,6 @@ export default function Home() {
       const response =
         await fetch(url);
 
-      if (!response.ok) {
-        throw new Error(
-          "Error consultando presupuesto"
-        );
-      }
-
       const result =
         await response.json();
 
@@ -149,58 +97,24 @@ export default function Home() {
 
       setDatos(rows);
 
-      const presupuesto =
-        rows.reduce(
-          (
-            sum: number,
-            row: any
-          ) =>
-            sum +
-            Number(
-              row.presupuesto ||
-                0
-            ),
-          0
-        );
-
-      const utilizado =
-        rows.reduce(
-          (
-            sum: number,
-            row: any
-          ) =>
-            sum +
-            Number(
-              row.utilizado ||
-                0
-            ),
-          0
-        );
-
-      const disponible =
-        presupuesto - utilizado;
-
-      const avance =
-        presupuesto > 0
-          ? (utilizado /
-              presupuesto) *
-            100
-          : 0;
-
       setKpis({
-        presupuesto,
-        utilizado,
-        disponible,
-        avance,
+        presupuesto:
+          result.kpis
+            ?.presupuesto || 0,
+
+        pagado:
+          result.kpis?.pagado || 0,
+
+        comprometido:
+          result.kpis
+            ?.comprometido || 0,
+
+        disponible:
+          result.kpis
+            ?.disponible || 0,
       });
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        "Ocurrió un error al consultar SiNube."
-      );
-
-      setDatos([]);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -213,7 +127,7 @@ export default function Home() {
   return (
     <main
       style={{
-        maxWidth: "1600px",
+        maxWidth: "1700px",
         margin: "0 auto",
         padding: "30px",
       }}
@@ -222,16 +136,18 @@ export default function Home() {
         Dashboard Ejecutivo de Obras
       </h1>
 
+      {/* FILTROS */}
+
       <div
         style={{
           background: "white",
           padding: 20,
           borderRadius: 12,
+          marginTop: 20,
           display: "flex",
           gap: 20,
-          flexWrap: "wrap",
           alignItems: "center",
-          marginBottom: 20,
+          flexWrap: "wrap",
         }}
       >
         <input
@@ -243,52 +159,6 @@ export default function Home() {
             )
           }
         />
-
-        <label>
-          <input
-            type="radio"
-            checked={
-              modoFecha === "mes"
-            }
-            onChange={() =>
-              setModoFecha(
-                "mes"
-              )
-            }
-          />
-          Mes
-        </label>
-
-        <label>
-          <input
-            type="radio"
-            checked={
-              modoFecha ===
-              "semana"
-            }
-            onChange={() =>
-              setModoFecha(
-                "semana"
-              )
-            }
-          />
-          Semana
-        </label>
-
-        <label>
-          <input
-            type="radio"
-            checked={
-              modoFecha === "dia"
-            }
-            onChange={() =>
-              setModoFecha(
-                "dia"
-              )
-            }
-          />
-          Día
-        </label>
 
         <select
           value={obra}
@@ -329,9 +199,9 @@ export default function Home() {
               "#2563eb",
             color: "white",
             border: 0,
-            borderRadius: 8,
             padding:
               "10px 25px",
+            borderRadius: 8,
             cursor: "pointer",
           }}
         >
@@ -341,20 +211,7 @@ export default function Home() {
         </button>
       </div>
 
-      {error && (
-        <div
-          style={{
-            background:
-              "#fee2e2",
-            color: "#991b1b",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 20,
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {/* KPIs */}
 
       <div
         style={{
@@ -362,7 +219,7 @@ export default function Home() {
           gridTemplateColumns:
             "repeat(4,1fr)",
           gap: 20,
-          marginBottom: 20,
+          marginTop: 25,
         }}
       >
         <KPI
@@ -374,11 +231,17 @@ export default function Home() {
         />
 
         <KPI
-          titulo="Utilizado"
+          titulo="Pagado"
+          valor={kpis.pagado}
+          color="#16a34a"
+        />
+
+        <KPI
+          titulo="Comprometido"
           valor={
-            kpis.utilizado
+            kpis.comprometido
           }
-          color="#dc2626"
+          color="#f59e0b"
         />
 
         <KPI
@@ -386,20 +249,15 @@ export default function Home() {
           valor={
             kpis.disponible
           }
-          color="#16a34a"
-        />
-
-        <KPI
-          titulo="% Avance"
-          valor={`${kpis.avance.toFixed(
-            2
-          )}%`}
-          color="#f97316"
+          color="#dc2626"
         />
       </div>
 
+      {/* TABLA */}
+
       <div
         style={{
+          marginTop: 25,
           background: "white",
           padding: 20,
           borderRadius: 12,
@@ -415,10 +273,10 @@ export default function Home() {
         >
           <thead>
             <tr>
-              <th>Renglón</th>
               <th>Concepto</th>
               <th>Presupuesto</th>
-              <th>Utilizado</th>
+              <th>Pagado</th>
+              <th>Comprometido</th>
               <th>Disponible</th>
               <th>%</th>
               <th>Estado</th>
@@ -428,50 +286,47 @@ export default function Home() {
           <tbody>
             {datos.map(
               (
-                row: any,
-                index: number
+                row,
+                index
               ) => (
                 <tr key={index}>
                   <td>
-                    {row.renglon}
-                  </td>
-
-                  <td>
                     {
-                      row.descripcion
+                      row.concepto
                     }
                   </td>
 
                   <td>
                     $
-                    {Number(
-                      row.presupuesto
-                    ).toLocaleString()}
+                    {row.presupuesto.toLocaleString()}
                   </td>
 
                   <td>
                     $
-                    {Number(
-                      row.utilizado
-                    ).toLocaleString()}
+                    {row.pagado.toLocaleString()}
                   </td>
 
                   <td>
                     $
-                    {Number(
-                      row.disponible
-                    ).toLocaleString()}
+                    {row.comprometido.toLocaleString()}
                   </td>
 
                   <td>
-                    {Number(
-                      row.porcentaje
-                    ).toFixed(2)}
+                    $
+                    {row.disponible.toLocaleString()}
+                  </td>
+
+                  <td>
+                    {row.avance.toFixed(
+                      2
+                    )}
                     %
                   </td>
 
                   <td>
-                    {row.estado}
+                    {
+                      row.estado
+                    }
                   </td>
                 </tr>
               )
@@ -487,7 +342,11 @@ function KPI({
   titulo,
   valor,
   color,
-}: KPIProps) {
+}: {
+  titulo: string;
+  valor: number;
+  color: string;
+}) {
   return (
     <div
       style={{
@@ -512,10 +371,8 @@ function KPI({
           fontWeight: 700,
         }}
       >
-        {typeof valor ===
-        "number"
-          ? `$${valor.toLocaleString()}`
-          : valor}
+        $
+        {valor.toLocaleString()}
       </div>
     </div>
   );
