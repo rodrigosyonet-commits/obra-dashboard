@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { parseSiNube } from "../../../lib/parser";
-export async function GET() {
+import { calculateRow } from "../../../lib/metrics";
 
-  const empresa = process.env.FACTURANUBE_EMP;
-  const sucursal = process.env.FACTURANUBE_SUC;
+export async function GET() {
+  const empresa = process.env.FACTURANUBE_EMP || "";
+  const sucursal = process.env.FACTURANUBE_SUC || "";
 
   const query =
     "SELECT " +
@@ -28,39 +29,59 @@ export async function GET() {
 
   const params = new URLSearchParams({
     tipo: "3",
-    emp: empresa || "",
-    suc: sucursal || "",
+    emp: empresa,
+    suc: sucursal,
     usu: process.env.FACTURANUBE_USU || "",
     pas: process.env.FACTURANUBE_PASSWORD || "",
     cns: query,
   });
 
   try {
+    console.log("QUERY:");
+    console.log(query);
 
     const response = await fetch(
       "https://getpost-dot-facturanube.appspot.com/getpost",
       {
         method: "POST",
         body: params,
+        cache: "no-store",
       }
     );
 
     const raw = await response.text();
 
+    console.log("RAW:");
+    console.log(raw);
+
     const data = parseSiNube(raw);
 
-    return NextResponse.json({
-      total: data.length,
-      data,
-      raw
-    });
+    const dataProcesada = data.map((row) =>
+      calculateRow(row)
+    );
 
+    return NextResponse.json({
+      success: true,
+      total: dataProcesada.length,
+      data: dataProcesada,
+      raw,
+      debug: {
+        empresa,
+        sucursal,
+      },
+    });
   } catch (error) {
+    console.error("ERROR API:", error);
 
-    return NextResponse.json({
-      success: false,
-      error: String(error)
-    });
-
+    return NextResponse.json(
+      {
+        success: false,
+        error: String(error),
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }
+`
