@@ -1,57 +1,130 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
 
-  const [mes, setMes] = useState("202607");
+  const [modoFecha, setModoFecha] =
+    useState("mes");
 
-  const [obra, setObra] = useState("");
+  const [fecha, setFecha] =
+    useState("2026-07-13");
 
-  const [datos, setDatos] = useState<any[]>([]);
+  const [obra, setObra] =
+    useState("");
 
-  const [kpis, setKpis] = useState({
-    presupuesto: 0,
-    utilizado: 0,
-    disponible: 0,
-    avance: 0,
-  });
+  const [obras, setObras] =
+    useState<any[]>([]);
+
+  const [datos, setDatos] =
+    useState<any[]>([]);
+
+  const [kpis, setKpis] =
+    useState({
+      presupuesto: 0,
+      utilizado: 0,
+      disponible: 0,
+      avance: 0,
+    });
+
+  function obtenerMes(fecha: string) {
+    const d = new Date(fecha);
+
+    const anio = d.getFullYear();
+
+    const mes = String(
+      d.getMonth() + 1
+    ).padStart(2, "0");
+
+    return `${anio}${mes}`;
+  }
+
+  function obtenerDia(fecha: string) {
+    return fecha.replaceAll("-", "");
+  }
+
+  async function cargarObras() {
+    const mes = obtenerMes(fecha);
+
+    const response = await fetch(
+      `/api/obras?mes=${mes}`
+    );
+
+    const result = await response.json();
+
+    setObras(result.obras || []);
+  }
 
   async function consultar() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `/api/presupuesto?tipoFiltro=mes&mes=${mes}&obra=${encodeURIComponent(
-          obra
-        )}`
-      );
+      let url =
+        `/api/presupuesto?tipoFiltro=${modoFecha}`;
 
-      const result = await response.json();
+      if (modoFecha === "mes") {
+        url +=
+          `&mes=${obtenerMes(fecha)}`;
+      }
 
-      const rows = result.data || [];
+      if (modoFecha === "dia") {
+        url +=
+          `&dia=${obtenerDia(fecha)}`;
+      }
+
+      if (obra) {
+        url +=
+          `&obra=${encodeURIComponent(
+            obra
+          )}`;
+      }
+
+      const response =
+        await fetch(url);
+
+      const result =
+        await response.json();
+
+      const rows =
+        result.data || [];
 
       setDatos(rows);
 
-      const presupuesto = rows.reduce(
-        (sum: number, r: any) =>
-          sum + Number(r.presupuesto || 0),
-        0
-      );
+      const presupuesto =
+        rows.reduce(
+          (
+            sum: number,
+            row: any
+          ) =>
+            sum +
+            Number(
+              row.presupuesto || 0
+            ),
+          0
+        );
 
-      const utilizado = rows.reduce(
-        (sum: number, r: any) =>
-          sum + Number(r.utilizado || 0),
-        0
-      );
+      const utilizado =
+        rows.reduce(
+          (
+            sum: number,
+            row: any
+          ) =>
+            sum +
+            Number(
+              row.utilizado || 0
+            ),
+          0
+        );
 
       const disponible =
         presupuesto - utilizado;
 
       const avance =
         presupuesto > 0
-          ? (utilizado / presupuesto) * 100
+          ? (utilizado /
+              presupuesto) *
+            100
           : 0;
 
       setKpis({
@@ -65,21 +138,26 @@ export default function Home() {
     }
   }
 
+  useEffect(() => {
+    cargarObras();
+  }, [fecha]);
+
   return (
     <main
       style={{
-        maxWidth: "1600px",
+        padding: 30,
+        maxWidth: 1600,
         margin: "0 auto",
-        padding: "30px",
       }}
     >
       <h1
         style={{
-          color: "#1e293b",
-          marginBottom: "30px",
+          color: "#1f2937",
+          marginBottom: 30,
         }}
       >
-        Dashboard Ejecutivo de Obras
+        Dashboard Ejecutivo
+        de Obras
       </h1>
 
       {/* FILTROS */}
@@ -90,58 +168,116 @@ export default function Home() {
           padding: 20,
           borderRadius: 12,
           display: "flex",
-          gap: 15,
+          gap: 20,
           alignItems: "center",
-          marginBottom: 25,
+          flexWrap: "wrap",
           boxShadow:
             "0 2px 10px rgba(0,0,0,.08)",
         }}
       >
-        <div>
-          <label>Mes</label>
+        <input
+          type="date"
+          value={fecha}
+          onChange={(e) =>
+            setFecha(
+              e.target.value
+            )
+          }
+        />
 
-          <br />
-
+        <label>
           <input
-            type="month"
-            value={`${mes.slice(
-              0,
-              4
-            )}-${mes.slice(4, 6)}`}
-            onChange={(e) => {
-              setMes(
-                e.target.value.replace("-", "")
-              );
-            }}
-          />
-        </div>
-
-        <div>
-          <label>Obra</label>
-
-          <br />
-
-          <input
-            type="text"
-            placeholder="OBRA MOLINO"
-            value={obra}
-            onChange={(e) =>
-              setObra(e.target.value)
+            type="radio"
+            name="modo"
+            checked={
+              modoFecha === "mes"
+            }
+            onChange={() =>
+              setModoFecha(
+                "mes"
+              )
             }
           />
-        </div>
+          Mes
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="modo"
+            checked={
+              modoFecha ===
+              "semana"
+            }
+            onChange={() =>
+              setModoFecha(
+                "semana"
+              )
+            }
+          />
+          Semana
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="modo"
+            checked={
+              modoFecha ===
+              "dia"
+            }
+            onChange={() =>
+              setModoFecha(
+                "dia"
+              )
+            }
+          />
+          Día
+        </label>
+
+        <select
+          value={obra}
+          onChange={(e) =>
+            setObra(
+              e.target.value
+            )
+          }
+        >
+          <option value="">
+            Todas las Obras
+          </option>
+
+          {obras.map(
+            (
+              obra,
+              index
+            ) => (
+              <option
+                key={index}
+                value={
+                  obra.razonSocial
+                }
+              >
+                {
+                  obra.razonSocial
+                }
+              </option>
+            )
+          )}
+        </select>
 
         <button
           onClick={consultar}
           disabled={loading}
           style={{
-            background: "#2563eb",
+            background:
+              "#2563eb",
             color: "white",
             border: 0,
+            padding:
+              "10px 25px",
             borderRadius: 8,
-            padding: "10px 25px",
             cursor: "pointer",
-            marginTop: 18,
           }}
         >
           {loading
@@ -158,33 +294,33 @@ export default function Home() {
           gridTemplateColumns:
             "repeat(4,1fr)",
           gap: 20,
-          marginBottom: 25,
+          marginTop: 25,
         }}
       >
-        <Card
+        <KPI
           titulo="Presupuesto"
           valor={kpis.presupuesto}
           color="#2563eb"
         />
 
-        <Card
+        <KPI
           titulo="Utilizado"
           valor={kpis.utilizado}
-          color="#e11d48"
+          color="#dc2626"
         />
 
-        <Card
+        <KPI
           titulo="Disponible"
           valor={kpis.disponible}
           color="#16a34a"
         />
 
-        <Card
+        <KPI
           titulo="% Avance"
           valor={`${kpis.avance.toFixed(
             2
           )}%`}
-          color="#ea580c"
+          color="#f97316"
         />
       </div>
 
@@ -192,6 +328,7 @@ export default function Home() {
 
       <div
         style={{
+          marginTop: 25,
           background: "white",
           borderRadius: 12,
           padding: 20,
@@ -203,15 +340,12 @@ export default function Home() {
         <table
           style={{
             width: "100%",
-            borderCollapse: "collapse",
+            borderCollapse:
+              "collapse",
           }}
         >
           <thead>
-            <tr
-              style={{
-                background: "#f1f5f9",
-              }}
-            >
+            <tr>
               <th>Renglón</th>
               <th>Concepto</th>
               <th>Presupuesto</th>
@@ -224,12 +358,21 @@ export default function Home() {
 
           <tbody>
             {datos.map(
-              (row: any, index: number) => (
+              (
+                row: any,
+                index: number
+              ) => (
                 <tr key={index}>
-                  <td>{row.renglon}</td>
+                  <td>
+                    {
+                      row.renglon
+                    }
+                  </td>
 
                   <td>
-                    {row.descripcion}
+                    {
+                      row.descripcion
+                    }
                   </td>
 
                   <td>
@@ -256,20 +399,22 @@ export default function Home() {
                   <td>
                     {Number(
                       row.porcentaje
-                    ).toFixed(2)}
+                    ).toFixed(
+                      2
+                    )}
                     %
                   </td>
 
                   <td>
-                    <span
+                    <div
                       style={{
                         width: 18,
                         height: 18,
-                        borderRadius: "50%",
-                        display:
-                          "inline-block",
+                        borderRadius:
+                          "50%",
                         background:
-                          row.estado === "⚫"
+                          row.estado ===
+                          "⚫"
                             ? "#111827"
                             : row.estado ===
                               "🔴"
@@ -291,24 +436,19 @@ export default function Home() {
   );
 }
 
-function Card({
+function KPI({
   titulo,
   valor,
   color,
-}: {
-  titulo: string;
-  valor: number | string;
-  color: string;
-}) {
+}: any) {
   return (
     <div
       style={{
         background: "white",
-        borderRadius: 12,
         padding: 20,
-        borderLeft: `6px solid ${color}`,
-        boxShadow:
-          "0 2px 10px rgba(0,0,0,.08)",
+        borderRadius: 12,
+        borderLeft:
+          `6px solid ${color}`,
       }}
     >
       <div
@@ -326,7 +466,8 @@ function Card({
           fontWeight: 700,
         }}
       >
-        {typeof valor === "number"
+        {typeof valor ===
+        "number"
           ? `$${valor.toLocaleString()}`
           : valor}
       </div>
