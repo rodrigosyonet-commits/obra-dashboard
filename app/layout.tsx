@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "Dashboard Ejecutivo de Obras",
   description: "Control Presupuestal de Obras",
 };
 
+type RootLayoutProps = {
+  children: ReactNode;
+};
+
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: RootLayoutProps) {
   return (
     <html lang="es">
       <body
